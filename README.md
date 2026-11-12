@@ -8,6 +8,8 @@ La «categoría» de un producto es solo la familia de equipos, para que los com
 
 ## Pantallas
 
+El portal incluye el editor de productos propios, variantes/SKU, fichas técnicas tipadas, galería, reservas y movimientos de inventario, pedidos, cotizaciones del marketplace, transferencias y entregas. Consulta el flujo completo y las reglas de operación en [SHOP_COMMERCE.md](../planta_beneficio_oro/docs/SHOP_COMMERCE.md).
+
 | Sección | Qué hace |
 |---|---|
 | Resumen | Productos por estado, cotizaciones por responder, calificación, verificación, avance del perfil |

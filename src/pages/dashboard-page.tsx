@@ -1,3 +1,6 @@
+import { CommandDeck, RadialMetric } from '@/components/ui/studio'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '@/lib/api'
 import { ArrowRight, BadgeCheck, CheckCircle2, Circle, FileSearch, ImageIcon, Package, Star, Tag, FilePen } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { BarRows, DataTable, Empty, Failed, Kpi, Loading, Panel, Pill, Progress, ScreenHeader, td, type BarRow } from '@/components/kit'
@@ -11,6 +14,8 @@ import { LISTING_STATUS_LABELS, priceText, ratingText } from '@/lib/organization
 export function DashboardPage() {
   const { provider } = useProviderContext()
   const id = provider!.id
+  const sales = useQuery({queryKey:['commerce','summary',id],queryFn:()=>api<{paymentReview:number;toShip:number;quotes:number;salesByCurrency:Record<string,number>}>(`/providers/${id}/commerce/summary`),refetchOnWindowFocus:true})
+  const amounts = Object.entries(sales.data?.salesByCurrency??{}).map(([currency,total])=>`${currency} ${total.toFixed(2)}`).join(' / ')
   const dash = useProviderDashboard(id)
   const detail = useProvider(id)
   const rfqs = useProviderRfqs(id)
@@ -42,10 +47,16 @@ export function DashboardPage() {
   ]
 
   return (
-    <>
-      <ScreenHeader title="Resumen" description={`Estado de ${provider!.organizationName} en el marketplace.`} />
+    <div className="studio-dashboard seller-dashboard">
+      <ScreenHeader title="Centro de ventas" description={`Estado de ${provider!.organizationName} en el marketplace.`} />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+      <CommandDeck eyebrow="Marketplace FUR / Portal de vendedores" title="Tu tienda, en un solo lugar." description="Productos propios, pedidos y cotizaciones. Dale seguimiento a cada venta y prepara tu siguiente entrega." metric={<><RadialMetric value={doneCount} total={checklist.length} label="Perfil comercial completo" /><span className="radial-caption">Tu perfil comercial</span></>} actions={[
+        {to:'/products/new',title:'Publicar un producto',description:'Crea tu ficha, variantes e inventario',icon:Package},
+        {to:'/orders',title:'Gestionar pedidos',description:'Revisa cobros, conversaciones y entregas',icon:FileSearch},
+        {to:'/shop-settings',title:'Configurar mi tienda',description:'Transferencias y zonas de envío',icon:Tag},
+      ]} />
+      {sales.isError ? <p className="mb-5 text-sm text-muted-foreground">No se pudieron cargar los indicadores de pedidos. <button className="underline" onClick={()=>void sales.refetch()}>Reintentar</button></p> : <div className="seller-sales-grid mb-5"><Kpi label="Cobros por verificar" value={sales.isLoading?'—':sales.data?.paymentReview??0} icon={FileSearch} to="/orders" hint="Transferencias informadas por compradores" /><Kpi label="Preparar y despachar" value={sales.isLoading?'—':sales.data?.toShip??0} icon={Package} to="/orders" /><Kpi label="Ventas con pago confirmado" value={sales.isLoading?'—':amounts||'Sin cobros confirmados'} icon={Tag} to="/orders" hint="Incluye envíos; no incluye reembolsos confirmados" /><Kpi label="Cotizaciones del marketplace" value={sales.isLoading?'—':sales.data?.quotes??0} icon={FileSearch} to="/orders" /></div>}
+      <div className="seller-health-grid">
         <Kpi label="Publicados" value={d?.listingsActive ?? '—'} icon={Package} to="/products" tone="ok" hint="Visibles en el marketplace" />
         <Kpi label="Borradores" value={d?.listingsDraft ?? '—'} icon={FilePen} to="/products" tone={d && d.listingsDraft > 0 ? 'warning' : 'default'} hint={d && d.listingsDraft > 0 ? 'Pendientes de publicar' : 'Sin pendientes'} />
         <Kpi label="A cotizar" value={d?.onRequestPricing ?? '—'} icon={Tag} hint="Productos sin precio publicado" />
@@ -54,7 +65,7 @@ export function DashboardPage() {
         <Kpi label="Verificación" value={p.verified ? 'Verificada' : 'Sin verificar'} icon={BadgeCheck} tone={p.verified ? 'ok' : 'default'} hint={p.verified ? 'Sello del administrador' : 'La concede el administrador'} />
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+      <div className="seller-operations-grid">
         <Panel title="Tus productos por estado">{dash.isLoading ? <Loading rows={3} /> : dash.isError ? <Failed onRetry={() => void dash.refetch()} /> : <BarRows rows={rows} empty="Aún no tienes productos" />}</Panel>
 
         <Panel title="Perfil de la empresa" subtitle={`${doneCount} de ${checklist.length} datos completos`} action={<Link to="/profile" className="inline-flex items-center gap-1 text-xs font-semibold text-fur-navy-900 hover:underline">Completar <ArrowRight className="size-3.5" /></Link>}>
@@ -116,10 +127,10 @@ export function DashboardPage() {
               )
             })}
           </DataTable>
-        ) : (
+        ) : recent.isError ? <Failed what="los productos" onRetry={() => void recent.refetch()} /> : (
           <Empty>Aún no tienes productos. <Link to="/products" className="font-semibold text-fur-navy-900 underline">Crea el primero</Link>.</Empty>
         )}
       </Panel>
-    </>
+    </div>
   )
 }

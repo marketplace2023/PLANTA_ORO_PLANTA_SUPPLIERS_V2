@@ -34,7 +34,7 @@ export function OnboardingPage() {
       },
       {
         onSuccess: () => {
-          toast.success('Solicitud enviada: el administrador revisará tu empresa. Mientras tanto puedes completar tu perfil.')
+          toast.success('Solicitud enviada: el administrador revisará tu perfil de vendedor. Mientras tanto puedes completar tu perfil.')
           setOpen(false)
         },
       },
@@ -48,12 +48,12 @@ export function OnboardingPage() {
           <span className="grid size-12 place-items-center rounded-xl bg-fur-navy-900 text-fur-gold-400">
             <Building2 className="size-6" aria-hidden />
           </span>
-          <h1 className="text-xl font-bold text-fur-navy-900">Registra tu empresa como proveedor</h1>
+          <h1 className="text-xl font-bold text-fur-navy-900">Crea tu perfil de vendedor</h1>
           <p className="text-sm text-muted-foreground">
-            Hola {user?.firstName}. Tu cuenta aún no gestiona ninguna empresa. Registra la tuya para publicar productos en el marketplace y recibir solicitudes de cotización. El administrador del ecosistema revisará y verificará tu solicitud.
+            Hola {user?.firstName}. Puedes vender como particular o representar una tienda. El administrador revisará el acceso para publicar. La verificación de una tienda es un proceso independiente y no se concede automáticamente al registrarse.
           </p>
           <div className="flex flex-wrap justify-center gap-2 pt-2">
-            <Button onClick={() => { create.reset(); setOpen(true) }}>Registrar mi empresa</Button>
+            <Button onClick={() => { create.reset(); setOpen(true) }}>Registrar mi perfil de vendedor</Button>
             <Button
               variant="outline"
               onClick={async () => {
@@ -69,11 +69,11 @@ export function OnboardingPage() {
 
       {open && (
         <FormDialog
-          title="Registrar mi empresa como proveedor"
-          description="Tu solicitud queda pendiente hasta que el administrador del ecosistema la apruebe y verifique."
+          title="Registrar vendedor o tienda"
+          description="Tu solicitud queda pendiente de aprobación. El sello de tienda verificada lo concede el administrador por separado."
           fields={[
-            { name: 'organizationName', label: 'Razón social', required: true, wide: true },
-            { name: 'taxId', label: 'Identificación tributaria', hint: 'RUC / NIT / CUIT. Evita registros duplicados.' },
+            { name: 'organizationName', label: 'Nombre del vendedor o tienda', required: true, wide: true },
+            { name: 'taxId', label: 'Identificación tributaria (opcional)', hint: 'Completa este dato si corresponde a tu actividad o tienda.' },
             { name: 'countryCode', label: 'País', type: 'select', required: true, options: countryOptions() },
             { name: 'city', label: 'Ciudad' },
             { name: 'contactEmail', label: 'Correo de contacto', type: 'email', hint: 'Solo lo ven usuarios con sesión iniciada.' },

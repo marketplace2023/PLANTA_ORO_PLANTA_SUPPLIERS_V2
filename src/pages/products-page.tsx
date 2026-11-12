@@ -1,142 +1,28 @@
 import { Archive, ImageIcon, Pencil, Plus, Search, Send, Undo2 } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { CheckGroup } from '@/components/check-group'
-import { FormDialog, type Values } from '@/components/form-dialog'
-import { ImagePicker } from '@/components/image-picker'
 import { DataTable, Empty, Failed, Loading, Panel, Pill, ScreenHeader, Segmented, td } from '@/components/kit'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useFamilies, useStageMasters } from '@/features/catalog/use-catalog'
 import { useProviderContext } from '@/features/organizations/provider-context'
 import {
-  useCreateListing,
   useProviderDashboard,
   useProviderListings,
-  useRemoveListingImage,
   useUpdateListing,
-  useUploadListingImage,
   type Availability,
   type Listing,
   type ListingStatus,
 } from '@/features/organizations/use-organizations'
 import { ApiError } from '@/lib/api'
-import { errorMessage } from '@/lib/forms'
-import { NO_IMAGE_CHANGE, type ImageChange } from '@/lib/image-file'
 import { imageSrc } from '@/lib/media'
 import { AVAILABILITY_LABELS, LISTING_STATUS_LABELS, priceText } from '@/lib/organizations'
 import { useDebouncedValue } from '@/lib/use-debounced-value'
 
 type View = 'ALL' | ListingStatus
 
-const CURRENCIES = ['USD', 'PEN', 'CLP', 'ARS', 'EUR']
 const STATUS_STYLE: Record<ListingStatus, string> = { ACTIVE: 'var(--fur-green-500)', DRAFT: 'var(--fur-steel-500)', ARCHIVED: 'var(--fur-orange-500)' }
 const AVAILABILITY_COLOR: Record<Availability, string> = { IN_STOCK: 'var(--fur-green-500)', ON_REQUEST: 'var(--fur-blue-500)', OUT_OF_STOCK: 'var(--fur-red-500)' }
-
-const opt = (v: string | boolean | undefined) => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
-const nul = (v: string | boolean | undefined) => (typeof v === 'string' && v.trim() ? v.trim() : null)
-
-/** Alta o edición de un producto. Se crea como borrador; se publica desde la lista (exige al menos una etapa). */
-function ProductFormDialog({ providerId, listing, onClose }: { providerId: string; listing?: Listing; onClose: () => void }) {
-  const create = useCreateListing(providerId)
-  const update = useUpdateListing(providerId)
-  const stages = useStageMasters()
-  const families = useFamilies()
-  const [stageCodes, setStageCodes] = useState<string[]>(listing?.stages.map((s) => s.code) ?? [])
-  const upload = useUploadListingImage(providerId)
-  const removeImage = useRemoveListingImage(providerId)
-  const [image, setImage] = useState<ImageChange>(NO_IMAGE_CHANGE)
-  const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
-
-  /** Guarda el producto y, después, aplica el cambio de foto. Si la foto falla, el producto ya quedó guardado y se avisa. */
-  async function submit(v: Values) {
-    setSaving(true)
-    setSaveError(null)
-    try {
-      const price = String(v.price).trim() === '' ? undefined : Number(v.price)
-      let id = listing?.id
-      if (listing) {
-        await update.mutateAsync({
-          id: listing.id,
-          title: String(v.title).trim(),
-          description: nul(v.description),
-          assetFamilyCode: String(v.assetFamilyCode),
-          price: price ?? null,
-          currency: String(v.currency),
-          availability: v.availability as Availability,
-          stockText: nul(v.stockText),
-          stageCodes,
-        })
-      } else {
-        id = (
-          await create.mutateAsync({
-            title: String(v.title).trim(),
-            description: opt(v.description),
-            assetFamilyCode: String(v.assetFamilyCode),
-            price,
-            currency: String(v.currency),
-            availability: v.availability as Availability,
-            stockText: opt(v.stockText),
-            stageCodes,
-          })
-        ).id
-      }
-      try {
-        if (id && image.file) await upload.mutateAsync({ id, file: image.file })
-        else if (id && image.remove) await removeImage.mutateAsync(id)
-      } catch (e) {
-        toast.error(`${listing ? 'Producto actualizado' : 'Producto creado como borrador'}, pero la foto no se pudo guardar: ${errorMessage(e) ?? 'error desconocido'}`)
-        onClose()
-        return
-      }
-      toast.success(listing ? 'Producto actualizado' : 'Producto creado como borrador')
-      onClose()
-    } catch (e) {
-      setSaveError(errorMessage(e))
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <FormDialog
-      title={listing ? 'Editar producto' : 'Nuevo producto'}
-      description="Los productos del marketplace son tuyos: no dependen de los modelos del catálogo del ecosistema."
-      fields={[
-        { name: 'title', label: 'Nombre del producto', required: true, wide: true },
-        { name: 'assetFamilyCode', label: 'Categoría', type: 'select', required: true, options: (families.data ?? []).map((f) => ({ value: f.code, label: f.name })), hint: 'Cómo lo encontrarán los compradores.' },
-        { name: 'availability', label: 'Disponibilidad', type: 'select', required: true, options: Object.entries(AVAILABILITY_LABELS).map(([value, label]) => ({ value, label })) },
-        { name: 'price', label: 'Precio', type: 'number', min: 0, step: '0.01', hint: 'Déjalo vacío para publicarlo «a cotizar».' },
-        { name: 'currency', label: 'Moneda', type: 'select', required: true, options: CURRENCIES.map((c) => ({ value: c, label: c })) },
-        { name: 'stockText', label: 'Stock comercial', placeholder: '40 unidades' },
-        { name: 'description', label: 'Descripción', type: 'textarea' },
-      ]}
-      initial={
-        listing
-          ? { title: listing.title, assetFamilyCode: listing.family.code, availability: listing.availability, price: listing.price === null ? '' : String(listing.price), currency: listing.currency, stockText: listing.stockText ?? '', description: listing.description ?? '' }
-          : { availability: 'ON_REQUEST', currency: 'USD' }
-      }
-      submitLabel={listing ? 'Guardar cambios' : 'Crear producto'}
-      busy={saving}
-      error={saveError}
-      extra={
-        <>
-        <ImagePicker label="Foto del producto" currentUrl={listing?.imageUrl ?? null} value={image} onChange={setImage} />
-        <CheckGroup
-          legend="Etapas relacionadas"
-          options={(stages.data ?? []).map((s) => ({ value: s.code, label: `${s.code} · ${s.name}` }))}
-          value={stageCodes}
-          onChange={setStageCodes}
-          help="Para publicar el producto necesitas al menos una etapa."
-        />
-        </>
-      }
-      onClose={onClose}
-      onSubmit={(v) => void submit(v)}
-    />
-  )
-}
 
 export function ProductsPage() {
   const { provider } = useProviderContext()
@@ -147,7 +33,7 @@ export function ProductsPage() {
   const [view, setView] = useState<View>('ALL')
   const [search, setSearch] = useState('')
   const q = useDebouncedValue(search.trim())
-  const [form, setForm] = useState<{ listing?: Listing } | null>(null)
+  const navigate = useNavigate()
   const list = useProviderListings(providerId, { status: view, search: q || undefined })
   const d = dash.data
 
@@ -166,7 +52,7 @@ export function ProductsPage() {
         title="Mis productos"
         description="Lo que ofreces en el marketplace. Un producto en borrador no es visible; al publicarlo aparece en el mercado."
         actions={
-          <Button onClick={() => setForm({})} disabled={!active} title={active ? undefined : 'Disponible cuando el administrador apruebe tu empresa'}>
+          <Button onClick={() => navigate('/products/new')} disabled={!active} title={active ? undefined : 'Disponible cuando el administrador apruebe tu empresa'}>
             <Plus /> Nuevo producto
           </Button>
         }
@@ -226,7 +112,7 @@ export function ProductsPage() {
                     </td>
                     <td className={`${td} text-right`}>
                       <div className="flex flex-wrap justify-end gap-1.5">
-                        <Button size="xs" variant="outline" aria-label={`Editar ${l.title}`} onClick={() => setForm({ listing: l })}>
+                        <Button size="xs" variant="outline" aria-label={`Editar ${l.title}`} onClick={() => navigate(`/products/${l.id}/edit`)}>
                           <Pencil /> Editar
                         </Button>
                         {l.status !== 'ACTIVE' ? (
@@ -251,7 +137,6 @@ export function ProductsPage() {
         )}
       </Panel>
 
-      {form && <ProductFormDialog providerId={providerId} listing={form.listing} onClose={() => setForm(null)} />}
     </>
   )
 }

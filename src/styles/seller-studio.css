@@ -1,0 +1,34 @@
+﻿/* Seller workspace uses the same Studio components as administration. */
+.company-switcher { border-radius: 13px; }
+.company-switcher > span:nth-child(2) > span:first-child { color: var(--muted-foreground); }
+.company-switcher [aria-label=Verificada] { color: #a07b10; }
+.seller-sales-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+.seller-health-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:1px; overflow:hidden; border:1px solid var(--border); border-radius:18px; background:var(--border); }
+.seller-health-grid .magic-surface { border:0; border-radius:0; }
+.seller-health-grid .studio-metric { min-height:116px; padding:18px; gap:12px; }
+.seller-health-grid .studio-metric-value { font-size:22px; line-height:1.15; }
+.seller-health-grid .studio-metric-label { font-size:11px; }
+.seller-health-grid .studio-metric-icon { display:none; }
+.seller-health-grid .studio-metric-bottom p { font-size:10px; }
+.seller-health-grid .studio-metric-watermark { display:none; }
+.seller-sales-grid .studio-metric-value { font-size:clamp(22px,2.1vw,34px); line-height:1.15; }
+.seller-operations-grid { display:grid; grid-template-columns:1fr 1.1fr 1.1fr; gap:18px; margin-top:22px; }
+.seller-dashboard .command-feature { min-height:280px; }
+.seller-dashboard .command-action { min-height:80px; }
+.seller-login-steps { display:flex; align-items:center; gap:18px; color:#b1c2d6; font-size:12px; }
+.seller-login-steps span { display:flex; align-items:center; gap:9px; }
+.seller-login-steps svg { width:17px; color:#ffda48; }
+.seller-login-steps i { width:26px; height:1px; background:#ffffff26; }
+.seller-login .login-content { padding-block:24px; }
+.shop-portal .panel-main > div { min-width:0; }
+.shop-portal .panel-main > div > div > header h1 { font-size:clamp(25px,2.5vw,34px); letter-spacing:-.04em; }
+.shop-portal .panel-main table { font-size:12px; }
+.shop-portal .panel-main tbody td { padding-block:16px; }
+.shop-portal .panel-main [data-slot=input], .shop-portal .shop-select { border-radius:10px; }
+.shop-portal .panel-main :is(article.rounded-2xl,section.rounded-2xl) { border-radius:18px; }
+.dark .company-switcher { color:var(--foreground); }
+.dark .company-switcher [aria-label=Verificada] { color:#ffda48; }
+@media(min-width:1024px) { .shop-portal .sidebar-brand .brand-logo strong { font-size:26px; } }
+@media(max-width:1279px) { .seller-health-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }.seller-operations-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }.seller-operations-grid > :last-child { grid-column:1 / -1; } }
+@media(max-width:767px) { .seller-sales-grid,.seller-health-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }.seller-operations-grid { grid-template-columns:1fr; }.seller-sales-grid .studio-metric { min-height:150px; }.seller-sales-grid .studio-metric-label { font-size:11px; }.seller-health-grid .studio-metric { min-height:120px; }.seller-dashboard .command-feature { min-height:240px; } }
+@media(prefers-reduced-motion:reduce) { .seller-dashboard { animation:none; } }

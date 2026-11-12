@@ -51,7 +51,7 @@ function EditProfile({ p, onClose }: { p: ProviderDetail; onClose: () => void })
 
   return (
     <FormDialog
-      title="Editar perfil de la empresa"
+      title="Editar perfil del vendedor"
       fields={[
         { name: 'city', label: 'Ciudad' },
         { name: 'contactEmail', label: 'Correo de contacto', type: 'email', hint: 'Solo lo ven usuarios con sesión iniciada.' },
@@ -62,7 +62,7 @@ function EditProfile({ p, onClose }: { p: ProviderDetail; onClose: () => void })
       initial={{ city: p.city ?? '', contactEmail: p.contactEmail ?? '', website: p.website ?? '', certifications: p.certifications.join(', '), description: p.description ?? '' }}
       busy={saving}
       error={saveError}
-      extra={<ImagePicker label="Logo de la empresa" currentUrl={p.logoUrl} value={image} onChange={setImage} />}
+      extra={<ImagePicker label="Foto o logo del vendedor" currentUrl={p.logoUrl} value={image} onChange={setImage} />}
       onClose={onClose}
       onSubmit={(v) => void submit(v)}
     />
@@ -79,7 +79,7 @@ function EditCoverage({ p, onClose }: { p: ProviderDetail; onClose: () => void }
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Cobertura de la empresa</DialogTitle>
+          <DialogTitle>Cobertura del vendedor</DialogTitle>
           <DialogDescription>Dónde puedes ayudar: así te encuentran en el directorio de proveedores.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -114,7 +114,7 @@ export function ProfilePage() {
   return (
     <>
       <ScreenHeader
-        title="Perfil de la empresa"
+        title="Perfil del vendedor"
         description="Así te ven los compradores en el directorio y en cada producto."
         actions={editable && <Button onClick={() => setDialog('profile')}><Pencil /> Editar perfil</Button>}
       />
@@ -149,7 +149,7 @@ export function ProfilePage() {
 
         <Panel title="Datos registrados" subtitle="Los fija el administrador del ecosistema">
           <dl className="space-y-3 text-sm">
-            <div><dt className="text-xs text-muted-foreground">Razón social</dt><dd className="font-medium text-fur-navy-900">{p.organizationName}</dd></div>
+            <div><dt className="text-xs text-muted-foreground">Nombre del vendedor o tienda</dt><dd className="font-medium text-fur-navy-900">{p.organizationName}</dd></div>
             <div><dt className="text-xs text-muted-foreground">Identificación tributaria</dt><dd>{p.taxId ?? <span className="text-muted-foreground">Sin registrar</span>}</dd></div>
             <div><dt className="text-xs text-muted-foreground">País</dt><dd>{countryName(p.countryCode)}</dd></div>
             <div><dt className="text-xs text-muted-foreground">Tu rol</dt><dd>{p.myRole === 'OWNER' ? 'Responsable' : p.myRole === 'MEMBER' ? 'Miembro' : '—'}</dd></div>

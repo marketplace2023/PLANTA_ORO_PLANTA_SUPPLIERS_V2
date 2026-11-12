@@ -1,5 +1,7 @@
+import { ArrowUpRight } from 'lucide-react'
+import { MagicSurface } from '@/components/ui/studio'
 import { AlertTriangle, Inbox, Lock, type LucideIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
@@ -16,12 +18,13 @@ const TONE_COLOR: Record<Tone, string> = {
 /** Encabezado de pantalla: título, descripción y acciones a la derecha. */
 export function ScreenHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
   return (
-    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+    <div className="screen-banner">
       <div>
-        <h1 className="text-2xl font-bold text-fur-navy-900">{title}</h1>
-        {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+        <p className="screen-eyebrow">Marketplace / Tu tienda</p>
+        <h1 className="screen-banner-title">{title}</h1>
+        {description && <p className="screen-banner-description">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="screen-banner-actions">{actions}</div>}
     </div>
   )
 }
@@ -44,17 +47,19 @@ export function Panel({
   flush?: boolean
 }) {
   return (
-    <section className={cn('rounded-xl border border-border bg-card shadow-sm', className)}>
-      {(title || action) && (
-        <header className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
-          <div>
-            {title && <h2 className="text-sm font-semibold text-fur-navy-900">{title}</h2>}
-            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
-          </div>
-          {action}
-        </header>
-      )}
-      <div className={flush ? '' : 'p-4'}>{children}</div>
+    <section className={cn('fur-panel', className)}>
+      <MagicSurface className="panel-surface">
+        {(title || action) && (
+          <header className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
+            <div>
+              {title && <h2 className="text-sm font-semibold text-fur-navy-900">{title}</h2>}
+              {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+            </div>
+            {action}
+          </header>
+        )}
+        <div className={flush ? '' : 'p-4'}>{children}</div>
+      </MagicSurface>
     </section>
   )
 }
@@ -76,23 +81,12 @@ export function Kpi({
   to?: string
 }) {
   const body = (
-    <div
-      className="relative flex h-full flex-col gap-2 overflow-hidden rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
-      style={{ borderTopColor: TONE_COLOR[tone], borderTopWidth: 3 }}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{label}</span>
-        <span className="grid size-8 place-items-center rounded-lg bg-fur-navy-900 text-fur-gold-400">
-          <Icon className="size-4" aria-hidden />
-        </span>
-      </div>
-      <div className={cn('leading-none font-bold text-fur-navy-900 tabular-nums', typeof value === 'string' && value.length > 9 ? 'text-2xl' : 'text-3xl')}>{value}</div>
-      {hint && (
-        <p className="text-xs" style={{ color: tone === 'default' ? 'var(--fur-gray-600)' : TONE_COLOR[tone] }}>
-          {hint}
-        </p>
-      )}
-    </div>
+    <MagicSurface className="studio-metric" style={{ '--metric-tone': TONE_COLOR[tone] } as CSSProperties}>
+      <div className="studio-metric-top"><span className="studio-metric-icon"><Icon aria-hidden /></span><span className="studio-metric-label">{label}</span>{to && <ArrowUpRight className="studio-metric-arrow" aria-hidden />}</div>
+      <strong className="studio-metric-value">{value}</strong>
+      <div className="studio-metric-bottom"><span className="studio-metric-status" aria-hidden />{hint && <p>{hint}</p>}</div>
+      <Icon className="studio-metric-watermark" aria-hidden />
+    </MagicSurface>
   )
   return to ? (
     <Link to={to} className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50">

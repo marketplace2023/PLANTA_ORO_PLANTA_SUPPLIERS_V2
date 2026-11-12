@@ -1,3 +1,7 @@
+import { ShopBusinessPage } from '@/pages/shop-business-page'
+import { ShopSettingsPage } from '@/pages/shop-settings-page'
+import { ShopOrdersPage } from '@/pages/shop-orders-page'
+import { ProductEditorPage } from '@/pages/product-editor-page'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Loading, Panel } from '@/components/kit'
 import { Shell } from '@/components/shell'
@@ -36,6 +40,11 @@ export default function App() {
       <Route element={<PortalArea />}>
         <Route index element={<DashboardPage />} />
         <Route path="products" element={<ProductsPage />} />
+        <Route path="products/new" element={<ProductEditorPage />} />
+        <Route path="products/:id/edit" element={<ProductEditorPage />} />
+        <Route path="orders" element={<ShopOrdersPage />} />
+        <Route path="business-tools" element={<ShopBusinessPage />} />
+        <Route path="shop-settings" element={<ShopSettingsPage />} />
         <Route path="rfqs" element={<RfqsPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="team" element={<TeamPage />} />
